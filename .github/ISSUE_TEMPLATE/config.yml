@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: AgentCut Architecture & Specifications
+    url: https://github.com/hatimbenayad/AgentCut/tree/main/docs
+    about: Review system architecture, ADRs, and technical feature specifications.
+  - name: Project Roadmap
+    url: https://github.com/hatimbenayad/AgentCut/blob/main/docs/product/roadmap.md
+    about: Track upcoming milestones and progressive delivery schedule.

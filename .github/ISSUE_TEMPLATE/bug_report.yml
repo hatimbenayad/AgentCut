@@ -1,0 +1,72 @@
+name: Bug Report
+description: Report a defect or unexpected behavior in AgentCut
+title: "[BUG]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue in AgentCut!
+        Please fill out this form to help us diagnose and fix the problem.
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Subsystem
+      description: Select the module where the bug occurred.
+      options:
+        - "Video Intelligence Engine (VAD / STT / OCR / Scenes)"
+        - "Timeline & Editing Engine (MLT / Canonical Model)"
+        - "Rendering & Export (melt / FFmpeg)"
+        - "MCP Server (Tools / Transports)"
+        - "Multi-Agent Orchestration & Interval Locking"
+        - "Cinematic Replay Studio"
+        - "Desktop UI (Electron / React)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of the bug.
+      placeholder: What went wrong?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Exact steps to reproduce the issue.
+      placeholder: |
+        1. Import media file 'test.mp4'
+        2. Run 'analyze_video' via MCP
+        3. Execute split_clip at 14.5s
+        4. See error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Logs or Traceback
+      description: Paste any terminal logs or stack traces.
+      render: shell
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment Details
+      description: OS version, GPU model, VRAM, Python version.
+      placeholder: "Windows 11, RTX 4050 6GB VRAM, Python 3.13"
+    validations:
+      required: true

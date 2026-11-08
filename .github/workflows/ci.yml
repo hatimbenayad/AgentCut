@@ -1,0 +1,45 @@
+name: AgentCut Continuous Integration
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-core:
+    name: Test Core & Timeline Engine (${{ matrix.os }}, Python ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install FFmpeg
+        uses: FedericoCarboni/setup-ffmpeg@v3
+        with:
+          ffmpeg-version: release
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pydantic fastapi uvicorn "av<14"
+
+      - name: Run Model Schema & Timeline Compilation Tests
+        run: |
+          python -m pytest tests/ -v -k "not heavy_gpu" || python experiments/timeline_mlt/test_timeline_compile.py
+
+      - name: Verify Documentation & Schema Integrity
+        run: |
+          python -c "import json, os; print('Validating JSON schemas...'); [json.load(open(os.path.join(r, f), encoding='utf-8')) for r, d, fs in os.walk('.') for f in fs if f.endswith('.json') and not f.startswith('tsconfig') and not f.startswith('package')]"

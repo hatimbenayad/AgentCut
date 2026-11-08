@@ -1,0 +1,85 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Node & Frontend
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+dist-electron/
+dist-bin/
+out/
+
+# Media, Cache & Storage
+cache/
+projects/
+*.mp4
+*.mov
+*.wav
+*.mp3
+*.mkv
+*.webm
+*.avi
+*.sqlite
+*.db
+*.db-wal
+*.db-shm
+
+# Experiments media files
+experiments/timeline_mlt/*.mp4
+experiments/timeline_mlt/*.json
+experiments/timeline_mlt/*.kdenlive
+
+# HuggingFace & Model Weights
+.cache/
+models/
+*.bin
+*.onnx
+*.safetensors
+*.pt
+*.pth
+
+# IDE & Editor
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+*.bak
+*.tmp
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.*.local

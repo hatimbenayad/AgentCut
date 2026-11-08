@@ -1,0 +1,56 @@
+name: Feature Request
+description: Propose a new feature, AI model adapter, or capability for AgentCut
+title: "[FEAT]: "
+labels: ["enhancement", "spec"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        AgentCut follows **Spec-Driven Development (SDD)**. Every feature begins with a clear specification and acceptance criteria before implementation.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: Is your feature request related to a problem or user pain point?
+      placeholder: I'm always frustrated when...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed Solution / Feature
+      description: Describe the solution you'd like to see.
+      placeholder: Add support for...
+    validations:
+      required: true
+
+  - type: textarea
+    id: user_story
+    attributes:
+      label: User Story
+      description: Express the request in standard user story format.
+      placeholder: |
+        As a [role],
+        I want to [action],
+        So that [business outcome / benefit].
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: Measurable criteria required to consider this feature complete.
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Any alternative solutions or workarounds you've considered.
