@@ -9,3 +9,4 @@ __all__ = [
     "KdenliveSerializer", "FFmpegCompiler", "ProjectDatabase",
     "EditingEvent", "VisualStaging", "AgentVisualIdentity"
 ]
+

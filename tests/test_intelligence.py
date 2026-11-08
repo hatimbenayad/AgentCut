@@ -53,3 +53,4 @@ def test_ocr_temporal_tracking():
     assert tracked[0].text == "AGENTCUT DEMO"
     assert tracked[0].start == 1.0
     assert tracked[0].end == 3.0
+

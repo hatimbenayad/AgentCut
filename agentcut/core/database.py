@@ -253,3 +253,4 @@ class ProjectDatabase:
         with self._get_connection() as conn:
             conn.execute("DELETE FROM interval_locks WHERE project_id = ? AND track_id = ? AND agent_id = ?",
                          (project_id, track_id, agent_id))
+

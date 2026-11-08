@@ -59,3 +59,4 @@ class AudioProcessor:
                 peaks.append(0.0)
 
         return peaks
+

@@ -70,3 +70,4 @@ def test_kdenlive_xml_serialization():
     assert 'title="Kdenlive XML Test"' in xml_str
     assert "<tractor id=\"maintractor\"" in xml_str
     assert "playlist_track_video_1" in xml_str
+

@@ -38,3 +38,4 @@ def test_timeline_render():
     assert os.path.exists(out_mp4)
     assert os.path.getsize(out_mp4) > 1000
     assert os.path.exists(res["kdenlive_path"])
+

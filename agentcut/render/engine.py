@@ -85,3 +85,4 @@ class RenderEngine:
             "file_size_bytes": os.path.getsize(abs_output),
             "verification": msg
         }
+

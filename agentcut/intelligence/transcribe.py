@@ -37,17 +37,23 @@ class TranscriptionEngine:
         from faster_whisper import WhisperModel
         import ctranslate2
 
+        # Load model: prioritize local cached files to prevent remote network timeouts
+        def _get_model(dev: str, comp: str):
+            try:
+                return WhisperModel(self.model_size, device=dev, compute_type=comp, cpu_threads=8, local_files_only=True)
+            except Exception:
+                return WhisperModel(self.model_size, device=dev, compute_type=comp, cpu_threads=8)
+
         cuda_available = ctranslate2.get_cuda_device_count() > 0
         device = "cuda" if cuda_available else "cpu"
         compute_type = "int8_float16" if cuda_available else "int8"
 
-        # Attempt CUDA load with CPU fallback
         try:
-            model = WhisperModel(self.model_size, device=device, compute_type=compute_type)
+            model = _get_model(device, compute_type)
         except Exception:
             device = "cpu"
             compute_type = "int8"
-            model = WhisperModel(self.model_size, device=device, compute_type=compute_type, cpu_threads=8)
+            model = _get_model("cpu", "int8")
 
         try:
             try:
@@ -57,21 +63,17 @@ class TranscriptionEngine:
                     word_timestamps=True,
                     beam_size=1
                 )
-                # Force generator evaluation to catch any runtime CUDA DLL missing error
                 seg_list = list(segments)
-            except RuntimeError as err:
-                if "cublas" in str(err).lower() or "cuda" in str(err).lower():
-                    # Fallback to CPU execution
-                    model = WhisperModel(self.model_size, device="cpu", compute_type="int8", cpu_threads=8)
-                    segments, info = model.transcribe(
-                        audio_wav_path,
-                        language=self.language,
-                        word_timestamps=True,
-                        beam_size=1
-                    )
-                    seg_list = list(segments)
-                else:
-                    raise err
+            except (RuntimeError, Exception) as err:
+                # Fallback to CPU execution if CUDA runtime failure occurs
+                model = _get_model("cpu", "int8")
+                segments, info = model.transcribe(
+                    audio_wav_path,
+                    language=self.language,
+                    word_timestamps=True,
+                    beam_size=1
+                )
+                seg_list = list(segments)
 
             sentences: List[SentenceSegment] = []
             for s_idx, seg in enumerate(seg_list):

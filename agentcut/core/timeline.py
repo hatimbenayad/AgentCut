@@ -239,3 +239,4 @@ class ProjectTimeline:
     @classmethod
     def from_json(cls, json_str: str) -> "ProjectTimeline":
         return cls.from_dict(json.loads(json_str))
+

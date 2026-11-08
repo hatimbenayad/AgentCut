@@ -108,3 +108,4 @@ class VisualStageSynthesizer:
             "agents": list(agents_map.values()),
             "frames": frames
         }
+

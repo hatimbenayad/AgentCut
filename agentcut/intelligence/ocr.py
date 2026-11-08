@@ -137,3 +137,4 @@ class OCREngine:
         # Simple character overlap ratio
         common = sum(1 for c in s1 if c in s2)
         return common / len_max
+

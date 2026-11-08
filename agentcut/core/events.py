@@ -91,3 +91,4 @@ class EditingEvent:
                 duration_ms=duration_ms
             )
         )
+

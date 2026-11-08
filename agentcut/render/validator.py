@@ -49,3 +49,4 @@ class RenderValidator:
             return True, f"Verified: {size_bytes} bytes, duration={actual_duration:.2f}s, video={has_video}, audio={has_audio}"
         except Exception as e:
             return False, f"Metadata validation exception: {str(e)}"
+
