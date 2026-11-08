@@ -70,3 +70,4 @@ body:
       placeholder: "Windows 11, RTX 4050 6GB VRAM, Python 3.13"
     validations:
       required: true
+

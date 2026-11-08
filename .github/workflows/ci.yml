@@ -43,3 +43,4 @@ jobs:
       - name: Verify Documentation & Schema Integrity
         run: |
           python -c "import json, os; print('Validating JSON schemas...'); [json.load(open(os.path.join(r, f), encoding='utf-8')) for r, d, fs in os.walk('.') for f in fs if f.endswith('.json') and not f.startswith('tsconfig') and not f.startswith('package')]"
+

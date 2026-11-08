@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgentCut - Cinematic Multi-Agent Collaborative Replay</title>
+  <style>
+    :root {
+      --bg: #0D0F12;
+      --surface: #16191E;
+      --surface-border: rgba(255, 255, 255, 0.08);
+      --cyan: #00D9FF;
+      --yellow: #FED330;
+      --purple: #A55EEA;
+      --green: #26DE81;
+      --red: #FC5C65;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: #FFF; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+
+    header {
+      height: 56px; border-bottom: 1px solid var(--surface-border); display: flex;
+      align-items: center; justify-content: space-between; padding: 0 24px; background: rgba(22, 25, 30, 0.7); backdrop-filter: blur(12px);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; letter-spacing: -0.5px; }
+    .brand-badge { background: linear-gradient(135deg, var(--cyan), var(--purple)); padding: 4px 10px; border-radius: 6px; font-size: 11px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; }
+    .timecode-display { font-family: "JetBrains Mono", monospace; font-size: 16px; color: var(--cyan); letter-spacing: 1px; }
+
+    main { flex: 1; display: grid; grid-template-columns: 280px 1fr; position: relative; overflow: hidden; }
+
+    /* Media Bin */
+    .media-bin {
+      border-right: 1px solid var(--surface-border); background: var(--surface); padding: 16px; display: flex; flex-direction: column; gap: 12px;
+    }
+    .bin-title { font-size: 12px; font-weight: 600; color: #8892B0; text-transform: uppercase; letter-spacing: 0.5px; }
+    .asset-card {
+      border: 1px solid var(--surface-border); border-radius: 8px; padding: 12px; background: rgba(255,255,255,0.02);
+      display: flex; gap: 10px; align-items: center; cursor: pointer; transition: all 0.2s;
+    }
+    .asset-card:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.04); }
+    .asset-thumb { width: 56px; height: 36px; border-radius: 4px; background: linear-gradient(135deg, #2D3748, #4A5568); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; }
+    .asset-info { font-size: 13px; font-weight: 500; }
+    .asset-meta { font-size: 11px; color: #718096; }
+
+    /* Stage Canvas */
+    .stage {
+      position: relative; display: flex; flex-direction: column; background: #080A0D;
+    }
+    .preview-box {
+      flex: 1; display: flex; align-items: center; justify-content: center; position: relative;
+    }
+    .video-mock {
+      width: 640px; height: 360px; background: #12151A; border: 1px solid var(--surface-border); border-radius: 8px; position: relative;
+      display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+    .video-caption {
+      position: absolute; bottom: 30px; font-size: 20px; font-weight: 800; color: #FFF; background: rgba(0,0,0,0.8);
+      padding: 6px 16px; border-radius: 6px; border-left: 4px solid var(--yellow); opacity: 0; transition: opacity 0.2s;
+    }
+    .video-punch {
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Timeline Canvas */
+    .timeline-container {
+      height: 240px; border-top: 1px solid var(--surface-border); background: var(--surface); display: flex; flex-direction: column;
+    }
+    .ruler {
+      height: 28px; border-bottom: 1px solid var(--surface-border); display: flex; align-items: center; padding: 0 16px; font-family: monospace; font-size: 11px; color: #718096; gap: 80px;
+    }
+    .tracks {
+      flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 12px 16px; position: relative;
+    }
+    .track {
+      height: 44px; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.08); border-radius: 6px; position: relative; display: flex; align-items: center; padding-left: 8px;
+    }
+    .track-label {
+      position: absolute; left: -60px; font-size: 11px; font-weight: 700; color: #718096; width: 50px; text-align: right;
+    }
+    .clip {
+      position: absolute; height: 36px; border-radius: 4px; display: flex; align-items: center; padding: 0 10px; font-size: 12px; font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3); opacity: 0; transform: translateY(10px); transition: all 0.3s;
+    }
+    .clip-v1a { background: linear-gradient(135deg, #1A365D, #2B6CB0); border: 1px solid var(--cyan); color: #EBF8FF; }
+    .clip-v1b { background: linear-gradient(135deg, #2C5282, #3182CE); border: 1px solid var(--cyan); color: #EBF8FF; }
+    .clip-cap { background: linear-gradient(135deg, #744210, #D69E2E); border: 1px solid var(--yellow); color: #FFFFF0; height: 28px; }
+
+    /* Animated Cursors */
+    .agent-cursor {
+      position: absolute; pointer-events: none; z-index: 100; transition: transform 0.05s linear;
+      display: flex; flex-direction: column; align-items: flex-start;
+    }
+    .cursor-pointer {
+      width: 14px; height: 14px; transform: rotate(-45deg); border-left: 2px solid #FFF; border-top: 2px solid #FFF;
+      filter: drop-shadow(0 2px 8px currentColor);
+    }
+    .agent-tag {
+      margin-top: 4px; margin-left: 10px; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 700;
+      color: #000; display: flex; align-items: center; gap: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); white-space: nowrap;
+    }
+    .action-bubble {
+      margin-top: 4px; margin-left: 10px; padding: 4px 10px; border-radius: 4px; font-size: 10px; background: rgba(0,0,0,0.8);
+      color: #FFF; border: 1px solid rgba(255,255,255,0.2); white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    /* Controls Bar */
+    footer {
+      height: 60px; border-top: 1px solid var(--surface-border); background: var(--surface); display: flex; align-items: center;
+      justify-content: space-between; padding: 0 24px;
+    }
+    .controls { display: flex; align-items: center; gap: 16px; }
+    .btn {
+      background: rgba(255,255,255,0.06); border: 1px solid var(--surface-border); color: #FFF; padding: 8px 16px;
+      border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+    }
+    .btn:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.3); }
+    .btn-primary { background: var(--cyan); color: #000; border-color: var(--cyan); }
+    .btn-primary:hover { background: #33E1FF; }
+
+    .scrubber { flex: 1; margin: 0 32px; -webkit-appearance: none; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.1); outline: none; }
+    .scrubber::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--cyan); cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <span>AgentCut Studio</span>
+      <span class="brand-badge">Cinematic Replay</span>
+    </div>
+    <div class="timecode-display" id="timecode">00:00:00:00</div>
+    <div style="font-size: 12px; color: #8892B0;">Collaborative Multi-Agent Session</div>
+  </header>
+
+  <main>
+    <div class="media-bin">
+      <div class="bin-title">Project Media Bin</div>
+      <div class="asset-card" id="binItem">
+        <div class="asset-thumb">MP4</div>
+        <div class="asset-info">
+          <div>clip_a.mp4</div>
+          <div class="asset-meta">1280x720 • 30fps • 5.0s</div>
+        </div>
+      </div>
+      <div style="margin-top: auto; font-size: 11px; color: #4A5568;">
+        Recorded in SQLite event ledger • 100% Deterministic Replay
+      </div>
+    </div>
+
+    <div class="stage" id="stage">
+      <div class="preview-box">
+        <div class="video-mock" id="videoMonitor">
+          <div id="videoMockContent" style="font-size: 13px; color: #718096; text-align: center;">
+            <div style="font-size: 28px; margin-bottom: 8px;">🎬</div>
+            <div>Program Monitor (1280x720)</div>
+          </div>
+          <div class="video-caption" id="videoCaption">AGENTCUT AI-NATIVE VIDEO STUDIO</div>
+        </div>
+      </div>
+
+      <div class="timeline-container">
+        <div class="ruler">
+          <span>00:00</span><span>00:01</span><span>00:02</span><span>00:03</span><span>00:04</span><span>00:05</span>
+        </div>
+        <div class="tracks">
+          <!-- Track Captions -->
+          <div class="track" id="trackCaptions">
+            <div class="track-label">C1</div>
+            <div class="clip clip-cap" id="clipCap" style="left: 60px; width: 480px;">
+              💬 AGENTCUT AI-NATIVE VIDEO STUDIO
+            </div>
+          </div>
+          <!-- Track Video -->
+          <div class="track" id="trackVideo">
+            <div class="track-label">V1</div>
+            <div class="clip clip-v1a" id="clip1A" style="left: 0px; width: 300px;">
+              clip_a [0.0s - 2.5s]
+            </div>
+            <div class="clip clip-v1b" id="clip1B" style="left: 305px; width: 300px;">
+              clip_a [2.5s - 5.0s] (1.15x Punch)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Agent Cursors -->
+      <div class="agent-cursor" id="editorCursor" style="color: var(--cyan); display: none;">
+        <div class="cursor-pointer" style="background: var(--cyan);"></div>
+        <div class="agent-tag" style="background: var(--cyan);">
+          <span>✂️ Video Editor</span>
+        </div>
+        <div class="action-bubble" id="editorBubble">Dragging footage to timeline</div>
+      </div>
+
+      <div class="agent-cursor" id="captionCursor" style="color: var(--yellow); display: none;">
+        <div class="cursor-pointer" style="background: var(--yellow);"></div>
+        <div class="agent-tag" style="background: var(--yellow);">
+          <span>💬 Caption Designer</span>
+        </div>
+        <div class="action-bubble" id="captionBubble">Stamping yellow caption</div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="controls">
+      <button class="btn btn-primary" id="playBtn" onclick="togglePlay()">▶ Play</button>
+      <button class="btn" onclick="restart()">↺ Restart</button>
+      <select id="speedSelect" class="btn" onchange="changeSpeed(this.value)">
+        <option value="0.5">0.5x</option>
+        <option value="1.0" selected>1.0x</option>
+        <option value="2.0">2.0x</option>
+        <option value="4.0">4.0x</option>
+      </select>
+    </div>
+    <input type="range" class="scrubber" id="scrubber" min="0" max="100" value="0" oninput="scrub(this.value)">
+    <div style="font-size: 12px; color: #8892B0;">Speed: <span id="speedDisplay">1.0x</span></div>
+  </footer>
+
+  <script>
+    let isPlaying = false;
+    let progress = 0; // 0 to 100
+    let speed = 1.0;
+    let animationId = null;
+
+    const editorCursor = document.getElementById("editorCursor");
+    const captionCursor = document.getElementById("captionCursor");
+    const editorBubble = document.getElementById("editorBubble");
+    const captionBubble = document.getElementById("captionBubble");
+
+    const clip1A = document.getElementById("clip1A");
+    const clip1B = document.getElementById("clip1B");
+    const clipCap = document.getElementById("clipCap");
+    const videoCaption = document.getElementById("videoCaption");
+    const videoMonitor = document.getElementById("videoMonitor");
+    const timecode = document.getElementById("timecode");
+    const scrubber = document.getElementById("scrubber");
+    const playBtn = document.getElementById("playBtn");
+
+    function renderStage(pct) {
+      // 0 to 30%: Editor drags from media bin to V1
+      if (pct < 30) {
+        editorCursor.style.display = "flex";
+        captionCursor.style.display = "none";
+        editorBubble.textContent = "Moving footage to Video Track 1";
+        
+        let p = pct / 30.0;
+        let x = 60 + p * 280;
+        let y = 140 + p * 380;
+        editorCursor.style.transform = `translate(${x}px, ${y}px)`;
+        
+        clip1A.style.opacity = p > 0.8 ? "1" : "0";
+        clip1A.style.transform = p > 0.8 ? "translateY(0)" : "translateY(10px)";
+        clip1B.style.opacity = "0";
+        clipCap.style.opacity = "0";
+        videoCaption.style.opacity = "0";
+        videoMonitor.style.transform = "scale(1.0)";
+      }
+      // 30% to 60%: Editor slices at 2.5s and applies 1.15x punch
+      else if (pct < 60) {
+        editorCursor.style.display = "flex";
+        captionCursor.style.display = "none";
+        let p = (pct - 30) / 30.0;
+        
+        if (p < 0.5) {
+          editorBubble.textContent = "Slicing clip at 2.5s for dynamic pacing";
+          let x = 340 + p * 200;
+          let y = 520;
+          editorCursor.style.transform = `translate(${x}px, ${y}px)`;
+          clip1B.style.opacity = "1";
+          clip1B.style.transform = "translateY(0)";
+          videoMonitor.style.transform = "scale(1.0)";
+        } else {
+          editorBubble.textContent = "Applying 1.15x punch-in jump cut";
+          let x = 440 + (p - 0.5) * 100;
+          let y = 520;
+          editorCursor.style.transform = `translate(${x}px, ${y}px)`;
+          videoMonitor.style.transform = "scale(1.15)";
+        }
+        clipCap.style.opacity = "0";
+        videoCaption.style.opacity = "0";
+      }
+      // 60% to 100%: Caption designer stamps animated captions
+      else {
+        editorCursor.style.display = "none";
+        captionCursor.style.display = "flex";
+        captionBubble.textContent = "Stamping speech-synchronized yellow caption";
+        
+        let p = (pct - 60) / 40.0;
+        let x = 300 + p * 240;
+        let y = 340 + p * 130;
+        captionCursor.style.transform = `translate(${x}px, ${y}px)`;
+
+        clipCap.style.opacity = "1";
+        clipCap.style.transform = "translateY(0)";
+        videoCaption.style.opacity = "1";
+        videoMonitor.style.transform = "scale(1.15)";
+      }
+
+      // Update timecode
+      let totalSeconds = (pct / 100.0) * 5.0;
+      let mins = Math.floor(totalSeconds / 60);
+      let secs = Math.floor(totalSeconds % 60);
+      let frames = Math.floor((totalSeconds % 1) * 30);
+      timecode.textContent = `00:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}:${String(frames).padStart(2,'0')}`;
+      scrubber.value = pct;
+    }
+
+    function tick() {
+      if (!isPlaying) return;
+      progress += 0.4 * speed;
+      if (progress >= 100) {
+        progress = 100;
+        isPlaying = false;
+        playBtn.textContent = "▶ Play";
+      }
+      renderStage(progress);
+      if (isPlaying) {
+        requestAnimationFrame(tick);
+      }
+    }
+
+    function togglePlay() {
+      if (progress >= 100) progress = 0;
+      isPlaying = !isPlaying;
+      playBtn.textContent = isPlaying ? "⏸ Pause" : "▶ Play";
+      if (isPlaying) tick();
+    }
+
+    function restart() {
+      progress = 0;
+      renderStage(0);
+      if (!isPlaying) {
+        isPlaying = true;
+        playBtn.textContent = "⏸ Pause";
+        tick();
+      }
+    }
+
+    function changeSpeed(val) {
+      speed = parseFloat(val);
+      document.getElementById("speedDisplay").textContent = val + "x";
+    }
+
+    function scrub(val) {
+      progress = parseFloat(val);
+      renderStage(progress);
+    }
+
+    // Initial render
+    renderStage(0);
+  </script>
+</body>
+</html>

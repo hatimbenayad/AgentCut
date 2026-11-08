@@ -25,3 +25,4 @@ Fixes # (issue)
 ## Visual / Replay Impact
 - [ ] State mutations emit structured events to SQLite `editing_events`
 - [ ] Deterministic replay trajectory verified
+

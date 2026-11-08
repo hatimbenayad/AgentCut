@@ -59,6 +59,11 @@ projects/
 experiments/timeline_mlt/*.mp4
 experiments/timeline_mlt/*.json
 experiments/timeline_mlt/*.kdenlive
+experiments/unit_renders/
+experiments/vertical_slice/*.mp4
+experiments/vertical_slice/*.json
+experiments/vertical_slice/*.kdenlive
+experiments/vertical_slice/cache/
 
 # HuggingFace & Model Weights
 .cache/
@@ -83,3 +88,4 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+

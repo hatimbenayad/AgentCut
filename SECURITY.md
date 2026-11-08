@@ -26,3 +26,4 @@ If you discover a security vulnerability in AgentCut:
 2. Send a detailed report to `hatimbenayad8@gmail.com`.
 3. Include reproduction steps, attack surface analysis, and impact assessment.
 4. We aim to acknowledge reports within 48 hours and provide patches within 7 days.
+

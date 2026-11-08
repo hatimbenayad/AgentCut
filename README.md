@@ -168,3 +168,4 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md) for workflow details.
 ## 📄 License
 
 Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for details.
+
